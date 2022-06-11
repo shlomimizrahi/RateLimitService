@@ -70,15 +70,18 @@ public class RateLimitService {
             // A key already exists (ie, there's a record of URL, and it's state)
 
             if (currentTimeMillis - urlMetaData.time < timeLimit) {
-                // Time hasn't passed yet
+                // Time hasn't passed yet, raise counter
+
+                urlMetaData.visitCount.incrementAndGet();
+
                 if (urlMetaData.visitCount.get() < this.threshold) {
                     // Count value hasn't reached threshold, allow entry, increment and log.
-                    toLog += urlMetaData.visitCount.incrementAndGet() + COMMA + NOT_BLOCKED;
+                    toLog += urlMetaData.visitCount.get() + COMMA + NOT_BLOCKED;
                     logger.info(toLog);
                     return true;
                 } else {
                     // Count value hit the threshold, block entry and log.
-                    toLog += threshold + COMMA + BLOCKED;
+                    toLog += urlMetaData.visitCount.get() + COMMA + BLOCKED;
                     logger.info(toLog);
                     return false;
                 }
