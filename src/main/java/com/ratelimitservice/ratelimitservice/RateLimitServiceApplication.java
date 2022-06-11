@@ -2,14 +2,15 @@ package com.ratelimitservice.ratelimitservice;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.Bean;
 
 @SpringBootApplication
 public class RateLimitServiceApplication {
 
+    public static final long[] appArgs = new long[2];
 
-    private static final long[] appArgs = new long[2];
-
+    /**
+     * @param args App arguments (Integer: Threshold, Long: TimeInMilliseconds)
+     */
     public static void main(String[] args) {
 
         try {
@@ -21,7 +22,7 @@ public class RateLimitServiceApplication {
                 System.exit(0);
             }
 
-        } catch(final Exception e){
+        } catch (final Exception e) {
             System.out.println("Invalid input. Must be two separate natual numbers, i.e: 10 60000");
             System.exit(0);
         }
@@ -29,8 +30,7 @@ public class RateLimitServiceApplication {
         SpringApplication.run(RateLimitServiceApplication.class, args);
     }
 
-    @Bean(name = "args")
-    public static long[] getExecutionArgs(){
+    public static long[] getArgs(){
         return appArgs;
     }
 }

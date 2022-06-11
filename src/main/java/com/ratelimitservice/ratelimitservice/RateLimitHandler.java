@@ -1,24 +1,36 @@
 package com.ratelimitservice.ratelimitservice;
 
-
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.async.DeferredResult;
 
-import java.util.Map;
-
 @Controller
 public class RateLimitHandler {
 
-    // TODO Block if threshold < 2
-    // TODO Logging
+    // TODO Block if threshold < 2 ?
     // TODO Check if considering urlparams as different key
-    // TODO Tests
-    // TODO Readme
-    // TODO Explaination
 
     /**
      * Enum class for the proposed return values.
+     */
+    private static class RequestBodyParams {
+        @JsonProperty
+        @NotNull
+        private String url;
+        @JsonCreator
+        public RequestBodyParams(final @NotNull String url){
+            this.url = url;
+        }
+        public @NotNull String getUrl(){
+            return this.url;
+        }
+    }
+
+    /**
+     * Proposed return values
      */
     public enum RETURN_VALUES {
 
@@ -52,29 +64,30 @@ public class RateLimitHandler {
     }
 
     /**
-     *
+     * a handler that injects parsing / validation & business logic tasks to the respective services. returns a deferred result,
+     * thus non-blocking. the RateLimitService resolves that result when, and if done successfully, this operation is delegated to the
+     * spring container daemon thread, that by nature is always running.
      * @param payload the payload given in the POST method for /report URL:
      * @return RETURN_VALUE enum denoted above in this class.
      */
     @RequestMapping(value = "/report", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
     @ResponseBody
-    public DeferredResult<String> handleURL(@RequestBody() final Map<String, Object> payload) {
+    public DeferredResult<String> handleURL(@RequestBody() final RequestBodyParams payload) {
 
         final long currentTimeMillis = System.currentTimeMillis();
         DeferredResult<String> output = new DeferredResult<>();
 
-        // TODO CATCH EXCEPTIONS
-        validationService.validateAndPrepare(payload, currentTimeMillis).
+        validationService.validateAndPrepare(payload.getUrl(), currentTimeMillis).
                 handle((result, ex) -> {
-                    rateLimitService.limitVisits(result).whenComplete((res, ex2)-> output.setResult(res));
+                    if (ex == null) {
+                        rateLimitService.isRequestAllowed(result).whenComplete((res, ex2) -> {
+                            String jsonBody = res ? RETURN_VALUES.DO_NOT_BLOCK.toString() : RETURN_VALUES.BLOCK.toString();
+                            output.setResult(jsonBody);
+                        });
+                    } else {
+                        output.setResult(ex.getCause().getMessage());
+                    }
                     return null;
                 });
         return output;
     }}
-
-/* These are the scopes of the exception(s) might be caught by the abstraction
-                 layer of the thread(s), ie, the pool / executor, we can log anything here or react accordingly if we want,
-                 regardless, the executor object by default will recreate the thread(s) and tasks will carry on,
-                 this is another level of safety for production mode that can be of advantage at times, depending on the
-                 severity, design or requirement(s), for example stopping the service, extra logging, send an email alert, etc.
-                 for the exercise purposes it's kept as null ie return nothing meaningful neither executes anything */

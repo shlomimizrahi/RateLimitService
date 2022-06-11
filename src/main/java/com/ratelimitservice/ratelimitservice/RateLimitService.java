@@ -29,21 +29,18 @@ public class RateLimitService {
     private final ConcurrentHashMap<Long, URLMetaData> urlRateCount;
     private final int threshold;
     private final long timeLimit;
-
     private final Executor executor = Executors.newSingleThreadExecutor();
-
-    
 
     public RateLimitService() {
         this.urlRateCount = new ConcurrentHashMap<>();
-        this.threshold = (int) RateLimitServiceApplication.getExecutionArgs()[0];
-        this.timeLimit = RateLimitServiceApplication.getExecutionArgs()[1];
+        this.threshold = (int) RateLimitServiceApplication.getArgs()[0];
+        this.timeLimit = RateLimitServiceApplication.getArgs()[1];
     }
 
-    private String _limitVisits(final RequestData requestData) {
+    private boolean _isRequestAllowed(final RequestData requestData) {
 
         final Date date = requestData.date();
-        final long currentTimeMillis = requestData.urlHashcode();
+        final long currentTimeMillis = requestData.milliseconds();
         final String url = requestData.url();
         final long hashcode = requestData.urlHashcode();
 
@@ -51,50 +48,55 @@ public class RateLimitService {
 
         try {
             new URL(url);
-        } catch (MalformedURLException e) {
+        } catch (final MalformedURLException e) {
 
             toLog += ZERO + COMMA + BLOCKED + INVALID_INPUT;
             logger.error(toLog);
-            return  RateLimitHandler.RETURN_VALUES.BLOCK.toString();
+            return false;
         }
 
         final URLMetaData urlMetaData = urlRateCount.putIfAbsent(hashcode, new URLMetaData(new AtomicInteger(1), currentTimeMillis));
 
         if (urlMetaData != null) {
             // A key already exists (ie, there's a record of URL, and it's state)
-            if (urlMetaData.time + timeLimit > currentTimeMillis) {
+
+            if (currentTimeMillis - urlMetaData.time < timeLimit) {
                 // Time hasn't passed yet
                 if (urlMetaData.visitCount.get() < this.threshold) {
                     // Count value hasn't reached threshold, allow entry, increment and log.
                     toLog += urlMetaData.visitCount.incrementAndGet() + COMMA + NOT_BLOCKED;
                     logger.info(toLog);
-                    return RateLimitHandler.RETURN_VALUES.DO_NOT_BLOCK.toString();
+                    return true;
 
                 } else {
                     // Count value hit the threshold, block entry and log.
                     toLog += threshold + COMMA + BLOCKED;
                     logger.info(toLog);
-                    return RateLimitHandler.RETURN_VALUES.BLOCK.toString();
+                    return false;
 
                 }
             } else {
                 // Threshold time reached since last measurement taken. Reset the value, i.e reset the counter and set a new timestamp
                 urlRateCount.put(hashcode, new URLMetaData(new AtomicInteger(1), currentTimeMillis));
-                toLog += 1 + COMMA + BLOCKED;
+                toLog += 1 + COMMA + NOT_BLOCKED;
                 logger.info(toLog);
-                return RateLimitHandler.RETURN_VALUES.DO_NOT_BLOCK.toString();
+                return true;
 
             }
         }
         // Value is empty, i.e the denoted url was first seen.
         toLog += 1 + COMMA + NOT_BLOCKED;
         logger.info(toLog);
-        return RateLimitHandler.RETURN_VALUES.DO_NOT_BLOCK.toString();
+        return true;
     }
 
-    public CompletableFuture<String> limitVisits(final RequestData requestData){
+    /**
+     * @param requestData the request data
+     * @return true if visited, false if blocked.
+     */
+    public CompletableFuture<Boolean> isRequestAllowed(final RequestData requestData){
 
-        return CompletableFuture.supplyAsync(() -> _limitVisits(requestData) , executor);
+        return CompletableFuture.supplyAsync(() -> _isRequestAllowed(requestData) , executor);
 
     }
 }
