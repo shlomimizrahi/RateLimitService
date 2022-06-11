@@ -26,7 +26,7 @@ public class ValidationService {
      * @param currentTimeMillis time in milliseconds
      * @return a CompletableFuture with the parsed, correct, ready to process data.
      */
-    public CompletableFuture<RequestData> validateAndPrepare(final String url, final long currentTimeMillis){
+    public CompletableFuture<RequestData> validateAndPrepare(final String url, final long currentTimeMillis) {
 
         return CompletableFuture.supplyAsync(() -> {
             try {
@@ -49,7 +49,6 @@ public class ValidationService {
             logger.error(err);
             throw new Exception(err);
         }
-
         return new RequestData(url.hashCode(), new Date(currentTimeMillis), url, currentTimeMillis);
     }
 }

@@ -53,3 +53,12 @@ more working threads, and possibly reach better performance, but risk in accepti
 race another valid task that was processed slower by the service. i.e URL request A arrived before request B did, i.e 
 A.timestamp < B.timestamp yet service computed B faster and allowed it to visit, raising the count of visits. by that time, A is done but threshold
 was reached thus A would be blocked.
+
+## Even more production-grade
+- Use defensive coding methodology to catch any exception and think of scalability of the service in terms of recovery infrastructure
+- Create a Dockerfile to that downloads dependencies, configures container environment, build, run the app within the container.
+- Exclude/ Remove possibly redundant packages that are included within Spring Boot framework
+- Draw an architecture of the service design
+- Stronger validation
+- Export logs to a logging system such as ELK Stack
+- 

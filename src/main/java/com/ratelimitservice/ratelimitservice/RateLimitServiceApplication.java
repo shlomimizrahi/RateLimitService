@@ -21,7 +21,6 @@ public class RateLimitServiceApplication {
                 System.out.println("Invalid input. Must be two separate natual numbers, i.e: 10 60000");
                 System.exit(0);
             }
-
         } catch (final Exception e) {
             System.out.println("Invalid input. Must be two separate natual numbers, i.e: 10 60000");
             System.exit(0);

@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -26,13 +27,13 @@ public class RateLimitService {
     private final static String COMMA = ", ";
     private final static Logger logger = LoggerFactory.getLogger(RateLimitHandler.class);
 
-    private final ConcurrentHashMap<Long, URLMetaData> urlRateCount;
+    private final HashMap<Long, URLMetaData> urlRateCount;
     private final int threshold;
     private final long timeLimit;
     private final Executor executor = Executors.newSingleThreadExecutor();
 
     public RateLimitService() {
-        this.urlRateCount = new ConcurrentHashMap<>();
+        this.urlRateCount = new HashMap<>();
         this.threshold = (int) RateLimitServiceApplication.getArgs()[0];
         this.timeLimit = RateLimitServiceApplication.getArgs()[1];
     }
@@ -42,9 +43,7 @@ public class RateLimitService {
      * @return true if visited, false if blocked.
      */
     public CompletableFuture<Boolean> isRequestAllowed(final RequestData requestData){
-
         return CompletableFuture.supplyAsync(() -> _isRequestAllowed(requestData) , executor);
-
     }
 
     // Private function to run the relevant processing of an incoming request
@@ -60,7 +59,6 @@ public class RateLimitService {
         try {
             new URL(url);
         } catch (final MalformedURLException e) {
-
             toLog += ZERO + COMMA + BLOCKED + INVALID_INPUT;
             logger.error(toLog);
             return false;
@@ -78,13 +76,11 @@ public class RateLimitService {
                     toLog += urlMetaData.visitCount.incrementAndGet() + COMMA + NOT_BLOCKED;
                     logger.info(toLog);
                     return true;
-
                 } else {
                     // Count value hit the threshold, block entry and log.
                     toLog += threshold + COMMA + BLOCKED;
                     logger.info(toLog);
                     return false;
-
                 }
             } else {
                 // Threshold time reached since last measurement taken. Reset the value, i.e reset the counter and set a new timestamp
@@ -92,7 +88,6 @@ public class RateLimitService {
                 toLog += 1 + COMMA + NOT_BLOCKED;
                 logger.info(toLog);
                 return true;
-
             }
         }
         // Value is empty, i.e the denoted url was first seen.
