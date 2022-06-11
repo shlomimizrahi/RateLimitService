@@ -56,7 +56,9 @@ public class RateLimitHandler {
     private final ValidationService validationService;
 
     /**
-     *
+     * Instantiates a RateLimitHandler Controller
+     * @param rateLimitService the RateLimitService Bean
+     * @param validationService the ValidationService Bean
      */
     public RateLimitHandler(final RateLimitService rateLimitService, final ValidationService validationService) {
         this.validationService = validationService;
@@ -75,7 +77,7 @@ public class RateLimitHandler {
     public DeferredResult<String> handleURL(@RequestBody() final RequestBodyParams payload) {
 
         final long currentTimeMillis = System.currentTimeMillis();
-        DeferredResult<String> output = new DeferredResult<>();
+        final DeferredResult<String> output = new DeferredResult<>();
 
         validationService.validateAndPrepare(payload.getUrl(), currentTimeMillis).
                 handle((result, ex) -> {

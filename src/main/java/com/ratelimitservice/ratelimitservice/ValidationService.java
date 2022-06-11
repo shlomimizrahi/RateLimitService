@@ -39,7 +39,6 @@ public class ValidationService {
     }
 
     /**
-     *
      * @param url the url given
      * @param currentTimeMillis time in milliseconds
      * @return a CompletableFuture with the parsed, correct, ready to process data.
