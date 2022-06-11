@@ -11,7 +11,7 @@ import org.springframework.web.context.request.async.DeferredResult;
 public class RateLimitHandler {
 
     // TODO Block if threshold < 2 ?
-    // TODO Check if considering urlparams as different key
+    // TODO Check if considering url params as different key
 
     /**
      * Enum class for the proposed return values.
@@ -83,7 +83,7 @@ public class RateLimitHandler {
                 handle((result, ex) -> {
                     if (ex == null) {
                         rateLimitService.isRequestAllowed(result).whenComplete((res, ex2) -> {
-                            String jsonBody = res ? RETURN_VALUES.DO_NOT_BLOCK.toString() : RETURN_VALUES.BLOCK.toString();
+                            final String jsonBody = res ? RETURN_VALUES.DO_NOT_BLOCK.toString() : RETURN_VALUES.BLOCK.toString();
                             output.setResult(jsonBody);
                         });
                     } else {
