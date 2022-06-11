@@ -12,10 +12,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Service
 public class RateLimitService {
 
+    private record URLMetaData(AtomicInteger visitCount, long time) {}
+
     /*
     Some Constants, mainly for logging purposes.
     */
-
     private final static String COUNT = "count";
     private final static String BLOCKED = "blocked";
     private final static String EQUALS = " = ";
@@ -23,8 +24,8 @@ public class RateLimitService {
     private final static String NOT_BLOCKED = "not " + BLOCKED;
     private final static String INVALID_INPUT = "NOTICE: INVALID URL INPUT";
     private final static String COMMA = ", ";
-    private record URLMetaData(AtomicInteger visitCount, long time) {}
     private final static Logger logger = LoggerFactory.getLogger(RateLimitHandler.class);
+
     private final ConcurrentHashMap<Long, URLMetaData> urlRateCount;
     private final int threshold;
     private final long timeLimit;
@@ -36,6 +37,17 @@ public class RateLimitService {
         this.timeLimit = RateLimitServiceApplication.getArgs()[1];
     }
 
+    /**
+     * @param requestData the request data
+     * @return true if visited, false if blocked.
+     */
+    public CompletableFuture<Boolean> isRequestAllowed(final RequestData requestData){
+
+        return CompletableFuture.supplyAsync(() -> _isRequestAllowed(requestData) , executor);
+
+    }
+
+    // Private function to run the relevant processing of an incoming request
     private boolean _isRequestAllowed(final RequestData requestData) {
 
         final Date date = requestData.date();
@@ -87,15 +99,5 @@ public class RateLimitService {
         toLog += 1 + COMMA + NOT_BLOCKED;
         logger.info(toLog);
         return true;
-    }
-
-    /**
-     * @param requestData the request data
-     * @return true if visited, false if blocked.
-     */
-    public CompletableFuture<Boolean> isRequestAllowed(final RequestData requestData){
-
-        return CompletableFuture.supplyAsync(() -> _isRequestAllowed(requestData) , executor);
-
     }
 }

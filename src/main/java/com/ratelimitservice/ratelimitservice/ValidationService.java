@@ -14,26 +14,11 @@ import java.util.concurrent.Executors;
 public class ValidationService {
 
     private final static Logger logger = LoggerFactory.getLogger(ValidationService.class);
+
     private final ExecutorService validationExec;
 
     public ValidationService() {
         validationExec = Executors.newSingleThreadExecutor();
-    }
-
-    // This function is private and contains the logic for validating input & parsing it and any additional possible
-    // computation before returning a well-formed data for further work.
-    private RequestData _validateAndPrepare(final String url, final long currentTimeMillis) throws Exception {
-
-        // Check if received value is of URL form
-        try {
-            new URL(url);
-        } catch (MalformedURLException e) {
-            final String err = "Invalid URL format";
-            logger.error(err);
-            throw new Exception(err);
-        }
-
-        return new RequestData(url.hashCode(), new Date(currentTimeMillis), url, currentTimeMillis);
     }
 
     /**
@@ -50,5 +35,21 @@ public class ValidationService {
                 throw new RuntimeException(e.getMessage());
             }
         }, validationExec);
+    }
+
+    // This function is private and contains the logic for validating input & parsing it and any additional possible
+    // computation before returning a well-formed data for further work.
+    private RequestData _validateAndPrepare(final String url, final long currentTimeMillis) throws Exception {
+
+        // Check if received value is of URL form
+        try {
+            new URL(url);
+        } catch (MalformedURLException e) {
+            final String err = "Invalid URL format";
+            logger.error(err);
+            throw new Exception(err);
+        }
+
+        return new RequestData(url.hashCode(), new Date(currentTimeMillis), url, currentTimeMillis);
     }
 }
