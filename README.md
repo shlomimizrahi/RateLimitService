@@ -1,12 +1,13 @@
 # Rate Limit Service
 
-## Requirements:
+## Requirements
 [Java 18](https://docs.oracle.com/en/java/javase/18/install/installation-jdk-linux-platforms.html#GUID-4907E1A6-7B4B-4E98-9DA5-BF2A4D01AA57)
 
 [maven 3.8.5](https://phoenixnap.com/kb/install-maven-on-ubuntu)
 
-## Installation:
+## Installation
 To install program from sources, run 'mvn install' in root folder of the project
+Requirements should be met.
 
 ## Run
 use './Run.sh', file is attached to the app with threshold = 10 and timelimit = 1min
@@ -15,7 +16,7 @@ OR './Run.sh <x> <y>' where x,y are int, long for threshold and time in millis r
 
 OR type  'java -jar RateLimitService <x> <y>' where x,y are the inputs.
 
-## Sample Test Run :
+## Sample Test Run
 You can use the the './sample_run.sh' command to execute a test that is similar to the example in the
 PDF file of the exercise requirements, note: the service. ie this java program has to run in advance.
 
@@ -55,10 +56,9 @@ A.timestamp < B.timestamp yet service computed B faster and allowed it to visit,
 was reached thus A would be blocked.
 
 ## Even more production-grade
-- Use defensive coding methodology to catch any exception and think of scalability of the service in terms of recovery infrastructure
+- Use defensive coding methodology to catch any exception and think of scalability of the service in terms of recovery infrastructure in the code.
 - Create a Dockerfile to that downloads dependencies, configures container environment, build, run the app within the container.
-- Exclude/ Remove possibly redundant packages that are included within Spring Boot framework
+- Exclude / Remove possibly redundant packages that are included within Spring Boot framework
 - Draw an architecture of the service design
-- Stronger validation
 - Export logs to a logging system such as ELK Stack
-- 
+- Design packages and project directories to be ready to include more files, logic, hierarchy (Services package, Entities package, etc..)

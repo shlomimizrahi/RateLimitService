@@ -1,4 +1,4 @@
-package com.ratelimitservice.ratelimitservice;
+package com.ratelimitservice;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,7 +48,6 @@ public class RateLimitService {
 
     // Private function to run the relevant processing of an incoming request
     private boolean _isRequestAllowed(final RequestData requestData) {
-
         final Date date = requestData.date();
         final long currentTimeMillis = requestData.milliseconds();
         final String url = requestData.url();

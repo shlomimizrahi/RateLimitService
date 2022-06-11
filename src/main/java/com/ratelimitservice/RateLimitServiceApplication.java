@@ -1,4 +1,4 @@
-package com.ratelimitservice.ratelimitservice;
+package com.ratelimitservice;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -12,7 +12,6 @@ public class RateLimitServiceApplication {
      * @param args App arguments (Integer: Threshold, Long: TimeInMilliseconds)
      */
     public static void main(String[] args) {
-
         try {
             appArgs[0] = Integer.parseInt(args[0]); // Parse & read threshold
             appArgs[1] = Long.parseLong(args[1]); // Parse & read time limit

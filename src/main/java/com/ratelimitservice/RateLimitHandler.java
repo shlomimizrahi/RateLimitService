@@ -1,4 +1,4 @@
-package com.ratelimitservice.ratelimitservice;
+package com.ratelimitservice;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -11,7 +11,6 @@ import org.springframework.web.context.request.async.DeferredResult;
 public class RateLimitHandler {
 
     // TODO Are url params different keys? (service applies for domain rater than URLs?)
-
     /**
      * Enum class for the proposed return values.
      */
@@ -74,7 +73,6 @@ public class RateLimitHandler {
     @RequestMapping(value = "/report", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
     @ResponseBody
     public DeferredResult<String> handleURL(@RequestBody() final RequestBodyParams payload) {
-
         final long currentTimeMillis = System.currentTimeMillis();
         final DeferredResult<String> output = new DeferredResult<>();
 

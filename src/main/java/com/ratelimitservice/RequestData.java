@@ -1,4 +1,4 @@
-package com.ratelimitservice.ratelimitservice;
+package com.ratelimitservice;
 
 import java.util.Date;
 
