@@ -6,8 +6,8 @@
 [maven 3.8.5](https://phoenixnap.com/kb/install-maven-on-ubuntu)
 
 ## Installation
-To install program from sources, run 'mvn install' in root folder of the project
-Requirements should be met.
+To install program from sources, run 'mvn install' in root folder of the project.
+Note that requirements (see above) should be met prior to installation
 
 ## Run
 use './Run.sh', file is attached to the app with threshold = 10 and timelimit = 1min
@@ -45,7 +45,7 @@ Other test can and should include:
 - Testing inner functions / method for each class
 - Testing Wrapping layers / Services with mock values
 - Testing Full process (End To End) correctness with no mocks
-- Benchmarking and validating concurrency - it's correctness and prformance
+- Benchmarking and validating concurrency - it's correctness and performance
 
 ## Possible Changes / Enhancements
 The current implementation assumes sequential order is important and dictated by timestamp,
