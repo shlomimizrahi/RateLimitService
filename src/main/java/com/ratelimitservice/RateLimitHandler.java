@@ -10,7 +10,6 @@ import org.springframework.web.context.request.async.DeferredResult;
 @Controller
 public class RateLimitHandler {
 
-    // TODO Are url params different keys? (service applies for domain rater than URLs?)
     /**
      * Enum class for the proposed return values.
      */
