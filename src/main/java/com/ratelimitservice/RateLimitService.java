@@ -44,8 +44,8 @@ public class RateLimitService {
         this.executor = Executors.newSingleThreadExecutor();
         this.cleanupOldEntriesScheduler = Executors.newScheduledThreadPool(1);
         this.urlRateCount = new HashMap<>();
-        this.threshold = (int) RateLimitServiceApplication.getArgs()[0];
-        this.timeLimit = RateLimitServiceApplication.getArgs()[1];
+        this.threshold = RateLimitServiceApplication.getAppArg1();
+        this.timeLimit = RateLimitServiceApplication.getAppArg2();
     }
 
     /**

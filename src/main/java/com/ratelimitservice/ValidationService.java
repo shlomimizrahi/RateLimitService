@@ -45,7 +45,7 @@ public class ValidationService {
         // Check if received value is of URL form
         try {
             new URL(url);
-        } catch (MalformedURLException e) {
+        } catch (final MalformedURLException e) {
             final String err = "Invalid URL format";
             logger.error(err);
             throw new Exception(err);

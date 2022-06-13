@@ -6,17 +6,18 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication
 public class RateLimitServiceApplication {
 
-    public static final long[] appArgs = new long[2];
+    private static int appArg1;
+    private static long appArg2;
 
     /**
      * @param args App arguments (Integer: Threshold, Long: TimeInMilliseconds)
      */
     public static void main(String[] args) {
         try {
-            appArgs[0] = Integer.parseInt(args[0]); // Parse & read threshold
-            appArgs[1] = Long.parseLong(args[1]); // Parse & read time limit
+            appArg1 = Integer.parseInt(args[0]); // Parse & read threshold
+            appArg2 = Long.parseLong(args[1]); // Parse & read time limit
 
-            if (appArgs[0] < 1 || appArgs[1] < 1) {
+            if (appArg1 < 1 || appArg2 < 1) {
                 System.out.println("Invalid input. Must be two separate natual numbers, i.e: 10 60000");
                 System.exit(0);
             }
@@ -28,7 +29,11 @@ public class RateLimitServiceApplication {
         SpringApplication.run(RateLimitServiceApplication.class, args);
     }
 
-    public static long[] getArgs(){
-        return appArgs;
+    public static int getAppArg1(){
+        return appArg1;
+    }
+
+    public static long getAppArg2(){
+        return appArg2;
     }
 }
