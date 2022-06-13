@@ -1,19 +1,29 @@
 package com.ratelimitservice;
 
+import com.ratelimitservice.entities.RequestData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicInteger;
 
 @Service
 public class RateLimitService {
 
-    private record URLMetaData(AtomicInteger visitCount, long time) {}
+    private static class URLMetaData {
+        final long time;
+        int visitCount;
+
+        public URLMetaData(final long time){
+            this.visitCount = 1;
+            this.time = time;
+        }
+        public int incrementNumOfVisitsAndGet(){
+            this.visitCount++;
+            return visitCount;
+        }
+    }
 
     /*
     Some Constants, mainly for logging purposes.
@@ -21,18 +31,18 @@ public class RateLimitService {
     private final static String COUNT = "count";
     private final static String BLOCKED = "blocked";
     private final static String EQUALS = " = ";
-    private final static String ZERO  = "0";
     private final static String NOT_BLOCKED = "not " + BLOCKED;
-    private final static String INVALID_INPUT = "NOTICE: INVALID URL INPUT";
     private final static String COMMA = ", ";
     private final static Logger logger = LoggerFactory.getLogger(RateLimitHandler.class);
-
     private final HashMap<Long, URLMetaData> urlRateCount;
     private final int threshold;
     private final long timeLimit;
-    private final Executor executor = Executors.newSingleThreadExecutor();
+    private final Executor executor;
+    private final ScheduledExecutorService cleanupOldEntriesScheduler;
 
     public RateLimitService() {
+        this.executor = Executors.newSingleThreadExecutor();
+        this.cleanupOldEntriesScheduler = Executors.newScheduledThreadPool(1);
         this.urlRateCount = new HashMap<>();
         this.threshold = (int) RateLimitServiceApplication.getArgs()[0];
         this.timeLimit = RateLimitServiceApplication.getArgs()[1];
@@ -55,15 +65,7 @@ public class RateLimitService {
 
         String toLog = date + " url "  + url + " is reported, " + COUNT + EQUALS;
 
-        try {
-            new URL(url);
-        } catch (final MalformedURLException e) {
-            toLog += ZERO + COMMA + BLOCKED + INVALID_INPUT;
-            logger.error(toLog);
-            return false;
-        }
-
-        final URLMetaData urlMetaData = urlRateCount.putIfAbsent(hashcode, new URLMetaData(new AtomicInteger(1), currentTimeMillis));
+        final URLMetaData urlMetaData = urlRateCount.putIfAbsent(hashcode, new URLMetaData(currentTimeMillis));
 
         if (urlMetaData != null) {
             // A key already exists (ie, there's a record of URL, and it's state)
@@ -71,28 +73,32 @@ public class RateLimitService {
             if (currentTimeMillis - urlMetaData.time < timeLimit) {
                 // Time hasn't passed yet, raise counter
 
-                urlMetaData.visitCount.incrementAndGet();
+                final int count = urlMetaData.incrementNumOfVisitsAndGet();
 
-                if (urlMetaData.visitCount.get() < this.threshold) {
+                if (count < this.threshold) {
                     // Count value hasn't reached threshold, allow entry, increment and log.
-                    toLog += urlMetaData.visitCount.get() + COMMA + NOT_BLOCKED;
+                    toLog += count + COMMA + NOT_BLOCKED;
                     logger.info(toLog);
                     return true;
                 } else {
                     // Count value hit the threshold, block entry and log.
-                    toLog += urlMetaData.visitCount.get() + COMMA + BLOCKED;
+                    toLog += count + COMMA + BLOCKED;
                     logger.info(toLog);
                     return false;
                 }
             } else {
                 // Threshold time reached since last measurement taken. Reset the value, i.e reset the counter and set a new timestamp
-                urlRateCount.put(hashcode, new URLMetaData(new AtomicInteger(1), currentTimeMillis));
+                urlRateCount.put(hashcode, new URLMetaData(currentTimeMillis));
                 toLog += 1 + COMMA + NOT_BLOCKED;
                 logger.info(toLog);
                 return true;
             }
         }
         // Value is empty, i.e the denoted url was first seen.
+
+        // Set a scheduled task to remove this entry after the time threshold has reached to reduce memory usage
+        cleanupOldEntriesScheduler.schedule(()-> {this.urlRateCount.remove(hashcode);}, timeLimit, TimeUnit.MILLISECONDS);
+
         toLog += 1 + COMMA + NOT_BLOCKED;
         logger.info(toLog);
         return true;
